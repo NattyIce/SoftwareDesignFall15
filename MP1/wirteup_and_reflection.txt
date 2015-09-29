@@ -1,0 +1,61 @@
+Section 1: Overview
+To begin, a brief overview of my project is that I wanted to draw titles from my favorite website, Jalopnik, which is a news blog about cars which operates a subblog of Gawker media, using the Kinja system. I chose this website with the original idea that I wanted to analyze when Jalopnik began posting articles deemed "clickbait" by its audience. These articles would consist of obvious questions in place of an actual headline, such "Is this the first Porsche 918 to crash on the street?", accompanied by a cover photo that basically answered the question at hand. These articles were met with much pushback from the audience, and they seemed to tail off after being very frequent for a period of time. 
+My original goal was to find when these articles began being published, find when they stopped, and then analyze to find the peak of their frequency. However, my original plan of searching for all headlines ending in a question mark proved futile, and many articles that were legitimate news questions as opposed to clickbait were often posted as well. Not to mention there is an entire column on the website with headlines that are all questions, which means I would have to essentially sort through all of the posts by that author and ignore them, further complicating my plan.
+I then decided that I wanted to analyze headlines for specific words, such as the names of car manufacturers. I would then use this to see which automaker Jalopnik seemed to post about the most, and from there, using both my own as well as the pattern package's sentiment analysis code to analyze the headline portions of my output for positive or negative statements.
+Section 2: Implementation
+ My original plan involved me pursuing a Kinja API, which I found to be unavailable to the public. I then turned to potentially using the Twitter API to pull Jalopnik's last 3200 (the limit of tweets attainable from the API) as their tweets simply consisted of their headlines and a hyperlink. However, setting up the Twitter API and being a registered user seemed to be more trouble than it was worth, so I simply opted to use a website call greptweet, which pulled the html of Jalopnik's Twitter page for its last 3200 tweets.
+I then had to break this down into dates and headlines, as I had decided that I wanted to see frequency of automaker names in headlines over time. However, either through my mistake or something else, I seemed to pull all of Jalopnik's 2015 tweets, and the rest as 2013 tweets, which meant I had skipped an entire year of posts. I decided not to worry as I had my data sample to use. 
+Once I had my html saved as a text file, I had to sort it. I knew that all I wanted was dates and headlines, so I set about doing that through the following functions:
+
+
+def pulldate(tweet):
+	pipeloc = tweet.find("|")
+	pipeloc2 = tweet.find("|", pipeloc+1)
+	pipecont = tweet [pipeloc+1:pipeloc2]
+	print pipecont
+
+My first function, pulldate, did just that; it pulled the date from the line of html text (which, thankfully, was organized by headline per line). Because I was able to see that the date section of the line began with a pipe (|) and ended with a pipe, I decided to locate the first and second pipes, and then have the contents between the pipes serve as my date.
+
+def pulltitle(tweet2):
+	titleloc = tweet2.find("|")
+	titleloc2 = tweet2.find("|", titleloc+1)
+	titleloc3 = tweet2.find("http")
+	titlecont = tweet2[titleloc+1:titleloc3]
+	return titlecont
+
+My next function pulled the title from the html line. I new that everything between the second pipe and the string "http" was the title of the headline, so I utlized part of my first function and simply added the html boundary section onto it.
+
+
+JalopnikDates = open("JalopnikTitles")
+JDates = list(JalopnikDates)
+for i in range(len(JDates)):
+	print pulltitle(JDates[i])
+
+Lastly, to display my date and title as a single line, I opened the html text file and ran it as a list. A single line of my output looked like this:
+
+Sun May 05 16:07:52 +0000 2013|Watch a 750-horsepower RX-7 destroy a New Zealand mountain:
+
+My date and title data were conveniently separated by the pipe and I made sure they were listed as one date and title per line. 
+
+Now that I had my text, my next task was organizing it by car company. Because Jalopnik reports on all car news, I decided that I would only choose some of the most popular brands to sort from my output. I selected Audi, Lamborghini, BMW, Mercedes, Ferrari, and McLaren. I then went on to create a dictionary named matched_tweets for the reason that I wanted to have several list of headlines pertaining to each manufacturer in the form of positive or negative wording. In addition to printing the headlines containing the manufacturer names, I created a list of words within a for loop that searched for each automaker, and any headlines containing that automaker and any of the words I had assigned as positive or negative. The command was as follows:
+
+or tweet in JDates:
+	tweet = tweet.lower()
+	tweet = pulltitle(tweet)
+	if "ferrari" in tweet:
+		ferrari.append(tweet)
+		if "best" in tweet or "good" in tweet or "cool" in tweet or "awesome" in tweet or "amazing" in tweet or "fast" in tweet:
+			ferrari_pos.append(tweet)
+		if "slow" in tweet or "worst" in tweet or "bad" in tweet or "break" in tweet or "crash" in tweet or "fire" in tweet or "crap" in tweet or "destroy" in tweet or "wreck" in tweet or "asshat" in tweet:
+			ferrari_neg.append(tweet)
+	elif "bmw" in tweet:
+		bmw.append(tweet)
+		if "best" in tweet or "good" in tweet or "cool" in tweet or "awesome" in tweet or "amazing" in tweet or "fast" in tweet:
+			bmw_pos.append(tweet)
+		if "slow" in tweet or "worst" in tweet or "bad" in tweet or "break" in tweet or "crash" in tweet or "fire" in tweet or "crap" in tweet or "destroy" in tweet or "wreck" in tweet or "asshat" in tweet:
+			bmw_neg.append(tweet)
+
+	Each automaker name was followed by _pos or _neg to represent positive or negative article headlines, respectively. After this, I gave matched_tweets keys in the form of strings as automaker, automaker_pos, or automaker_neg. With some help from an expert Python coding friend, I was able to sort my output as the dictionary randomized it during building. Lastly, I wrote a for loop that included all the keys in the dictionary, and then printed them, after which I decided to compare my own version of sentiment analysis with the pattern package's built in code, and printed the positive/negative sentiment for each headline in _pos or _neg keys, with negative numerical values being negative sentiments, and vice versa. As such, many of the negative sentiment values were accompanied by negative articles with a few outliers, but more interesting was the fact that some artiles deemed positive have very high or very low sentiment values (in relation to 0), with some with low values having titles that seem to be incredibly positive in their wording. I found that from a simple look at my own sentiment analysis, Jalopnik is the most negative surrounding Ferrari.
+
+	Section 4: Reflection
+	I came to the conclusion that even though I selected a set of words to sort negative or positive headlines by, there were many discrepancies. For example, one of my positive words was "fast". In Audi's positive section, there's a headline reading "is the golf r faster than the way more expensive audi rs3? " which contains the word fast, but is actually demeaning towards Audi in its wording. There were many headlines that could be interpreted in either way depending on the reader, in addition to the computer correctly interpreting word presence where I would not have wanted it to in my own mind. Speaking in terms of process, the most difficult part of this project was writing the code itself, as I often struggle with syntax as I am somewhat behind in my reading. From what reading I was able to complete, however, I've found that when I have either a NINJA or a friend making me think critically about what I'm actually trying to write, I'm able to build something a bit better. A friend also gave me sound advice in that I shouldn't try to think in code. Instead, I should set goals and then learn how to code towards them. I do feel that I did reach my end goal of this project, which was to find out which manufacturers Jalopnik regarded most negatively or positively. Regarding the scope of my project, when I really began getting into the meat of it, it didn't really feel doable, but once I had a bit of help, things quickly downsized in overall proportion and I was able to complete the project. 

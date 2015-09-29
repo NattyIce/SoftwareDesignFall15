@@ -1,16 +1,14 @@
 import collections
 from pattern.en import *
 
-def pulldate(tweet):
+def pulldate(tweet): #This function pulls the date from the JalopnikTitles file by locating the two pipes (|), and printing what is between them
 	pipeloc = tweet.find("|")
 	pipeloc2 = tweet.find("|", pipeloc+1)
 	pipecont = tweet [pipeloc+1:pipeloc2]
 	print pipecont
+		
 
-#for i in range(len(JDates)):
-	#pulldate(JDates[i])	
-
-def pulltitle(tweet2):
+def pulltitle(tweet2): #This function pulls the title by again locating the pipes, and then priting the text between the second pipe and the string ("http")
 	titleloc = tweet2.find("|")
 	titleloc2 = tweet2.find("|", titleloc+1)
 	titleloc3 = tweet2.find("http")
@@ -20,12 +18,12 @@ def pulltitle(tweet2):
 
 
 JalopnikDates = open("JalopnikTitles")
-JDates = list(JalopnikDates)
+JDates = list(JalopnikDates) #This list prints all the dates and titles from JalopnikTitles
 for i in range(len(JDates)):
 	print pulltitle(JDates[i])
 
 
-matched_tweets = {}
+matched_tweets = {} #This is my dictionary that matches headlies to automaker names that appear in them. Following are the lists for each manufacturer.
 
 ferrari = []
 bmw = []
@@ -49,7 +47,7 @@ mclaren_neg = []
 
 
 
-for tweet in JDates:
+for tweet in JDates: #This loop defines positive and negative terms for each list.
 	tweet = tweet.lower()
 	tweet = pulltitle(tweet)
 	if "ferrari" in tweet:
@@ -115,12 +113,12 @@ matched_tweets["mclaren_pos"] = mclaren_pos
 matched_tweets["mclaren_neg"] = mclaren_neg
 
 
-matched_tweets = collections.OrderedDict(sorted(matched_tweets.items()))
+matched_tweets = collections.OrderedDict(sorted(matched_tweets.items())) #This sorts my output by manufacturer.
 
 JalopnikDates.close()
 
 #print(matched_tweets)
-for key in matched_tweets.keys():
+for key in matched_tweets.keys(): #This loop matches lists to string keys and includes the sentiment analysis portion.
 	print "\n"
 	print key
 	for tweet in matched_tweets[key]:
